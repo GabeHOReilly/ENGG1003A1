@@ -74,7 +74,7 @@ void arrayShiftEn(char *arr, char shiftFac) {
     }
     
     /*This shifts the first 26 - <encryption key> elements of the array so that
-    the value <index - shiftFac> does not exceed the maximum index of the array.
+    the value <index-shiftFac> does not exceed the maximum index of the array.
     Without this boundary, a segmentation fault would occur*/
     for(int index = 0; index < 26 - shiftFac; index++) {
         arr[index] = arr[index + shiftFac];
