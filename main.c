@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 //This allows for the absolute value function to be used
-#include <math.h>
+#include <stdlib.h>
 
 //This will shift the alphabet array by the encryption key (numerical)
 void arrayShiftEn(char *arr, char shiftFac);
@@ -33,7 +33,8 @@ int main() {
     }
     
     //This retrieves the encryption key (numerical) from the user
-    scanf("%d", &shiftFac);
+    printf("Please input an encryption key: ");
+    scanf("%c", &shiftFac);
     
     /*This converts the encryption key to be the equivalent positive value 
     (i.e. -3 is the same as 22)*/
@@ -41,23 +42,23 @@ int main() {
     
     //This allows the choice of encryption or decryption
     printf("Type 0 to encrypt and 1 to decrypt\n");
-    scanf("%d", &encOrDec);
+    scanf("%c", &encOrDec);
     
     //If the user wishes to encrypt
     if(!encOrDec) {
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftEn(alpArr, shiftFac);
-        printf("%s\n", alpArr);
+        //printf("%s\n", alpArr);
     } else { //Otherwise
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftDe(alpArr, shiftFac);
-        printf("%s\n", alpArr);
+        //printf("%s\n", alpArr);
     }
     
     //This will encrypt a given string
     tranMessage(code, codeLength, alpArr);
 
-    printf("%s", code);
+    printf("%s\n", code);
     
 }
 
@@ -90,7 +91,7 @@ void arrayShiftEn(char *arr, char shiftFac) {
 
 //This shifts the ASCII values in the alphabet array by the encryption key
 void arrayShiftDe(char *arr, char shiftFac) {
-    int toShift =shiftFac*-1;
+
     
     /*This stores the first <encryption key> elements of the alphabet array so 
     they are preserved and may be added back on the end of the shifted array*/
