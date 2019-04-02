@@ -22,7 +22,7 @@ int main() {
     char encOrDec;
     
     //This is the encrypted message
-    char code[] = "OCZ LPDXF WMJRI AJS EPHKN JQZM OCZ GVUT YJB";
+    char code[] = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG";
     
     //This is the length of code[]
     int codeLength = sizeof(code);
@@ -33,16 +33,17 @@ int main() {
     }
     
     //This retrieves the encryption key (numerical) from the user
-    printf("Please input an encryption key: \n");
-    scanf("%c", &shiftFac);
+    printf("Please input an encryption key: ");
+    scanf("%s", &shiftFac);
     
     /*This converts the encryption key to be the equivalent positive value 
     (i.e. -3 is the same as 22)*/
     shiftFac = abs(26 + shiftFac)%26;
+    printf("%c", shiftFac);
     
     //This allows the choice of encryption or decryption
-    printf("Type 0 to encrypt and 1 to decrypt\n");
-    scanf("%c", &encOrDec);
+    printf("Type 0 to encrypt and 1 to decrypt: ");
+    scanf("%s", &encOrDec);
     
     //If the user wishes to encrypt
     if(!encOrDec) {
@@ -89,7 +90,7 @@ void arrayShiftEn(char *arr, char shiftFac) {
 
 //This shifts the ASCII values in the alphabet array by the encryption key
 void arrayShiftDe(char *arr, char shiftFac) {
-
+    shiftFac = 26 - shiftFac;
     
     /*This stores the first <encryption key> elements of the alphabet array so 
     they are preserved and may be added back on the end of the shifted array*/
