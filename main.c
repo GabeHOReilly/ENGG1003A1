@@ -33,7 +33,7 @@ int main() {
     }
     
     //This retrieves the encryption key (numerical) from the user
-    printf("Please input an encryption key: ");
+    printf("Please input an encryption key: \n");
     scanf("%c", &shiftFac);
     
     /*This converts the encryption key to be the equivalent positive value 
@@ -48,11 +48,9 @@ int main() {
     if(!encOrDec) {
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftEn(alpArr, shiftFac);
-        //printf("%s\n", alpArr);
     } else { //Otherwise
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftDe(alpArr, shiftFac);
-        //printf("%s\n", alpArr);
     }
     
     //This will encrypt a given string
