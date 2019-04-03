@@ -22,7 +22,7 @@ int main() {
     char encOrDec;
     
     //This is the encrypted message
-    char code[] = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG";
+    char code[] = "YMJ VZNHP GWTBS KTC OZRUX TAJW YMJ QFED ITL";
     
     //This is the length of code[]
     int codeLength = sizeof(code);
@@ -34,7 +34,7 @@ int main() {
     
     //This retrieves the encryption key (numerical) from the user
     printf("Please input an encryption key: ");
-    scanf("%s", &shiftFac);
+    scanf("%d", &shiftFac);
     
     /*This converts the encryption key to be the equivalent positive value 
     (i.e. -3 is the same as 22)*/
@@ -43,7 +43,7 @@ int main() {
     
     //This allows the choice of encryption or decryption
     printf("Type 0 to encrypt and 1 to decrypt: ");
-    scanf("%s", &encOrDec);
+    scanf("%d", &encOrDec);
     
     //If the user wishes to encrypt
     if(!encOrDec) {
