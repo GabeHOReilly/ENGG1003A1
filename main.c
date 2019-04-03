@@ -22,7 +22,7 @@ int main() {
     char encOrDec;
     
     //This is the encrypted message
-    char code[] = "YMJ VZNHP GWTBS KTC OZRUX TAJW YMJ QFED ITL";
+    char code[] = "ANHHN HJFHY";
     
     //This is the length of code[]
     int codeLength = sizeof(code);
