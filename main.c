@@ -49,8 +49,8 @@ int main() {
     if(!encOrDec) {
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftEn(alpArr, shiftFac);
-    } else { //Otherwise
-        //This will shift the ASCII values in the alphabet array by the encryption key
+    } else { /*Otherwise
+        This will shift the ASCII values in the alphabet array by the encryption key*/
         arrayShiftDe(alpArr, shiftFac);
     }
     
