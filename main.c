@@ -21,9 +21,40 @@ int main() {
     //This is used for the choice of encryption or decryption
     char encOrDec;
     
-    //This is the encrypted message
-    char code[] = "ANHHN HJFHY";
+    /*This is used to store the file length as to minimise the space required for
+      the storage of the message as a string*/
+    int fileLength = 1;
     
+    //This is the encrypted message, read from message.txt
+    FILE *input;
+    input = fopen("\message.txt", "r");
+    
+    /*This determines the length of the file by adding 1 every time the file pointer
+    position is incremented until the end of file*/
+    while(!feof(input)) {
+        fileLength++;
+        fgetc(input);
+    }
+    
+    //This creates a string with the same amout of characters as message.txt
+    char code[fileLength];
+    
+    //This resets the file pointer position
+    fseek(input, 0, SEEK_SET);
+    
+    //This stores the message into the code[] string
+    while(!feof(input)) {
+        /*This was defined as a static int here TEMPORARILY (to avoid having to come
+          up with a reasonable and meaningful name)*/
+         
+        //TODO update this to be more readable
+/*********************************************************************************/
+        static int i = 0;
+        code[i] = fgetc(input);
+        i++;
+/*********************************************************************************/
+    }
+
     //This is the length of code[]
     int codeLength = sizeof(code);
     
