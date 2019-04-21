@@ -14,11 +14,14 @@ void arrayShiftDe(char *arr, char shiftFac);
 //This will encrypt the message using the encryption key
 void tranMessage(char *toTran, int toTranLen, char *encKey);
 
+//This will run if the user specifies the use of a caesar cipher
 void caesarCipher(void);
 
+//This will run if decrypting a caesar cipher without the key
 void unknownCaesar(char *toDec, int toDecLength, char *alpArr);
 
 int main() {
+    //For testing
     caesarCipher();
     
     return 0;
