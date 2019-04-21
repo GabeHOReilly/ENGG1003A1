@@ -1,3 +1,4 @@
+
 //This allows for the standard input and output methods to be used
 #include <stdio.h>
 
@@ -13,9 +14,17 @@ void arrayShiftDe(char *arr, char shiftFac);
 //This will encrypt the message using the encryption key
 void tranMessage(char *toTran, int toTranLen, char *encKey);
 
+void caesarCipher(void);
+
 void unknownCaesar(char *toDec, int toDecLength, char *alpArr);
 
 int main() {
+    caesarCipher();
+    
+    return 0;
+}
+
+void caesarCipher(void) {
     //This is the encryption key (numerical)
     char shiftFac;
     //This is the array storing the ASCII values of the letters of the alphabet
@@ -64,35 +73,60 @@ int main() {
         alpArr[index] = 65 + index;
     }
     
-    unknownCaesar(code, codeLength, alpArr);
-    
-    //This retrieves the encryption key (numerical) from the user
-    printf("Please input an encryption key: ");
-    scanf("%d", &shiftFac);
-    
-    /*This converts the encryption key to be the equivalent positive value 
-    (i.e. -3 is the same as 22)*/
-    shiftFac = abs(26 + shiftFac)%26;
-    printf("%c", shiftFac);
-    
     //This allows the choice of encryption or decryption
     printf("Type 0 to encrypt and 1 to decrypt: ");
     scanf("%d", &encOrDec);
     
-    //If the user wishes to encrypt
+    
+    //If encryption was selected
     if(!encOrDec) {
+        //This retrieves the encryption key (numerical) from the user
+        printf("Please input an encryption key: ");
+        scanf("%d", &shiftFac);
+        
+        /*This converts the encryption key to be the equivalent positive value 
+        (i.e. -3 is the same as 22)*/
+        shiftFac = abs(26 + shiftFac)%26;
+        printf("%c", shiftFac);
+        
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftEn(alpArr, shiftFac);
-    } else { /*Otherwise
-        This will shift the ASCII values in the alphabet array by the encryption key*/
-        arrayShiftDe(alpArr, shiftFac);
-    }
-    
-    //This will encrypt a given string
-    tranMessage(code, codeLength, alpArr);
+        
+        //This will encrypt the message
+        tranMessage(code, codeLength, alpArr);
 
-    printf("%s\n", code);
-    
+        //Print the encrypted message
+        printf("%s\n", code);
+         
+    } else { //Otherwise
+        //Allows the choice to decrypt with or without a key
+        int keyReq;
+        printf("Type 0 to decrypt without a known key or 1 to decrypt with one: ");
+        scanf("%d", &keyReq);
+        
+        //If the key is required
+        if(keyReq) {
+            //This retrieves the encryption key (numerical) from the user
+            printf("Please input an encryption key: ");
+            scanf("%d", &shiftFac);
+            
+            /*This converts the encryption key to be the equivalent positive value 
+            (i.e. -3 is the same as 22)*/
+            shiftFac = abs(26 + shiftFac)%26;
+            
+            //This will shift the ASCII values in the alphabet array by the encryption key
+            arrayShiftDe(alpArr, shiftFac);
+            
+            //This will decrypt the message
+            tranMessage(code, codeLength, alpArr);
+        
+            printf("%s\n", code);
+        } else { //If the key is not required
+            //Decrypt without the key
+            unknownCaesar(code, codeLength, alpArr);
+        }
+        
+    }
 }
 
 //This shifts the ASCII values in the alphabet array by the encryption key
@@ -162,6 +196,8 @@ void tranMessage(char *toTran, int toTranLen, char *encKey) {
     }
 }
 
+
+//This will decrypt a message using caesar cipher without a known key.
 void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
     //This stores an unaltered copy of the array so that the original message isn't lost
     char toDecCopy[toDecLength];
@@ -175,26 +211,68 @@ void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
         alpArrCopy[alpInd] = alpArr[alpInd];
     }
 
+    //This resests back to the original message for multiple attempts
     for(int ind = 0; ind < toDecLength; ind++) {
         toDecCopy[ind] = toDec[ind];
     }
-    //Correct correct encryption key (numerical)
-    int corrKey = 0;
+    
+    //These are to take an educated guess at a solution if all else fails
+    int mostE = 0, mostEKey = 0, solved = 0;
+    
     //This runs the translation function on the message with all 26 possible cipehr keys
     for(char count = 0; count < 26; count++) {
+        int eCount = 0;
+
+        //Try decryption with a certain key
         arrayShiftDe(alpArr, count);
-        tranMessage(toDec, toDecLength, alpArr);
-        for(int testInd = 0; testInd < toDecLength - 3; testInd++) {
-            if(toDec[testInd] == 'T' && toDec[testInd + 1] == 'H' && toDec[testInd + 2] == 'E') {
-                corrKey = count;
-                printf("%c", corrKey);
-            } else {
-                for(int i = 0; i < 26; i++) 
-                    alpArr[i] = alpArrCopy[i];
+        tranMessage(toDecCopy, toDecLength, alpArr);
+        
+        //This looks for the words 'THE' and 'AND' to verify if decryption has worked
+        for(int testInd = 0; testInd < toDecLength - 2; testInd++) {
+            //If the word 'THE' is found, print the solution
+            if(toDecCopy[testInd] == 'T' && toDecCopy[testInd + 1] == 'H' && toDecCopy[testInd + 2] == 'E') {
+                printf("%s \n", toDecCopy);
+                solved = 1;
                 
-                for(int i = 0; i < toDecLength; i++)
-                    toDec[i] = toDecCopy[i];
+            } else
+            //If the word 'AND' is found, print the solution
+            if(toDecCopy[testInd] == 'A' && toDecCopy[testInd + 1] == 'N' && toDecCopy[testInd + 2] == 'D') {
+                solved = 1;
+                
+            } else {
+                //Otherwise determine how often the letter 'E' occurs
+                for(int index = 0; index < toDecLength; index++) {
+                    if(toDecCopy[index] == 'E')
+                        eCount++;
+                        
+                }
+                
+                //Record what key yielded the most 'E's
+                if(eCount > mostE) {
+                    mostE = eCount;
+                    mostEKey = count;
+                    
+                }
             }
         }
+        
+        //Resets the alphabet for a new key to be used
+        for(int i  = 0; i < 26; i++)
+            alpArr[i] = alpArrCopy[i];
+            
+        //Resets the message for a new key to be used
+        for(int i = 0; i < toDecLength; i++)
+            toDecCopy[i] = toDec[i];
+    }
+    
+    //If no solution has been determined
+    if(!solved) {
+        
+        //Assume that the correct answer is the key which yields the most 'E's
+        arrayShiftDe(alpArr, mostEKey);
+        tranMessage(toDecCopy, toDecLength, alpArr);
+        
+        //Print the answer
+        printf("%s\n", toDecCopy);
     }
 }
