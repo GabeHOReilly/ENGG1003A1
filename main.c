@@ -13,6 +13,8 @@ void arrayShiftDe(char *arr, char shiftFac);
 //This will encrypt the message using the encryption key
 void tranMessage(char *toTran, int toTranLen, char *encKey);
 
+void unknownCaesar(char *toDec, int toDecLength, char *alpArr);
+
 int main() {
     //This is the encryption key (numerical)
     char shiftFac;
@@ -42,26 +44,27 @@ int main() {
     //This resets the file pointer position
     fseek(input, 0, SEEK_SET);
     
+    //This is used to convert the file stream into a string
+    int tempInd = 0;
+    
     //This stores the message into the code[] string
     while(!feof(input)) {
-        /*This was defined as a static int here TEMPORARILY (to avoid having to come
-          up with a reasonable and meaningful name)*/
-         
-        //TODO update this to be more readable
-/*********************************************************************************/
-        static int i = 0;
-        code[i] = fgetc(input);
-        i++;
-/*********************************************************************************/
+        
+        //This adds the characters in message.txt into a string
+        code[tempInd] = fgetc(input);
+        tempInd++;
     }
 
     //This is the length of code[]
     int codeLength = sizeof(code);
     
+    
     //This stores the values of the ASCII values of the alphabet into the array
     for(int index = 0; index < 26; index++) {
         alpArr[index] = 65 + index;
     }
+    
+    unknownCaesar(code, codeLength, alpArr);
     
     //This retrieves the encryption key (numerical) from the user
     printf("Please input an encryption key: ");
@@ -153,8 +156,45 @@ void tranMessage(char *toTran, int toTranLen, char *encKey) {
     //For every letter in the message
     for(int i = 0; i < toTranLen; i++) {
         //Change it to the new letter under the encryption key, ignoring spaces
-        if(toTran[i] != ' ') {
+        if(toTran[i] >= 65 && toTran[i] <= 91) {
             toTran[i] = encKey[toTran[i] - 65];
+        }
+    }
+}
+
+void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
+    //This stores an unaltered copy of the array so that the original message isn't lost
+    char toDecCopy[toDecLength];
+    
+    //This will allow the encryption key to be reset after each attempt
+    char alpArrCopy[26];
+    
+    //This resets the encryption key for multiple attempts to be allowed
+    int alpArrLength = 26;
+    for(int alpInd = 0; alpInd < alpArrLength; alpInd++) {
+        alpArrCopy[alpInd] = alpArr[alpInd];
+    }
+
+    for(int ind = 0; ind < toDecLength; ind++) {
+        toDecCopy[ind] = toDec[ind];
+    }
+    //Correct correct encryption key (numerical)
+    int corrKey = 0;
+    //This runs the translation function on the message with all 26 possible cipehr keys
+    for(char count = 0; count < 26; count++) {
+        arrayShiftDe(alpArr, count);
+        tranMessage(toDec, toDecLength, alpArr);
+        for(int testInd = 0; testInd < toDecLength - 3; testInd++) {
+            if(toDec[testInd] == 'T' && toDec[testInd + 1] == 'H' && toDec[testInd + 2] == 'E') {
+                corrKey = count;
+                printf("%c", corrKey);
+            } else {
+                for(int i = 0; i < 26; i++) 
+                    alpArr[i] = alpArrCopy[i];
+                
+                for(int i = 0; i < toDecLength; i++)
+                    toDec[i] = toDecCopy[i];
+            }
         }
     }
 }
