@@ -20,9 +20,20 @@ void caesarCipher(void);
 //This will run if decrypting a caesar cipher without the key
 void unknownCaesar(char *toDec, int toDecLength, char *alpArr);
 
+//This will decrypt a substitution cipher with a known key
+void subCipher(void);
+
 int main() {
-    //For testing
-    caesarCipher();
+    int rotOrSub;
+    printf("Type 0 for Caesar or 1 for substitution: ");
+    scanf("%d", &rotOrSub);
+    
+    if(!rotOrSub) {
+        caesarCipher();
+    } else {
+        subCipher();
+    }
+
     
     return 0;
 }
@@ -226,21 +237,38 @@ void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
     for(char count = 0; count < 26; count++) {
         int eCount = 0;
 
+        
         //Try decryption with a certain key
         arrayShiftDe(alpArr, count);
         tranMessage(toDecCopy, toDecLength, alpArr);
         
-        //This looks for the words 'THE' and 'AND' to verify if decryption has worked
+        //This looks for common three-letter words to verify if decryption has worked
         for(int testInd = 0; testInd < toDecLength - 2; testInd++) {
             //If the word 'THE' is found, print the solution
             if(toDecCopy[testInd] == 'T' && toDecCopy[testInd + 1] == 'H' && toDecCopy[testInd + 2] == 'E') {
                 printf("%s \n", toDecCopy);
                 solved = 1;
-                
+                return;
             } else
             //If the word 'AND' is found, print the solution
             if(toDecCopy[testInd] == 'A' && toDecCopy[testInd + 1] == 'N' && toDecCopy[testInd + 2] == 'D') {
+                printf("%s \n", toDecCopy);
                 solved = 1;
+                return;
+                
+            } else
+            //If the word 'FOR' is found, print the solution
+            if(toDecCopy[testInd] == 'F' && toDecCopy[testInd + 1] == 'O' && toDecCopy[testInd + 2] == 'R') {
+                printf("%s \n", toDecCopy);
+                solved = 1;
+                return;
+                
+            } else 
+            //If the word 'NOT' is found, print the solution
+            if(toDecCopy[testInd] == 'N' && toDecCopy[testInd + 1] == 'O' && toDecCopy[testInd + 2] == 'T') {
+                printf("%s \n", toDecCopy);
+                solved = 1;
+                return;
                 
             } else {
                 //Otherwise determine how often the letter 'E' occurs
@@ -277,5 +305,71 @@ void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
         
         //Print the answer
         printf("%s\n", toDecCopy);
+    }
+}
+
+//This will encrypt or decrypt a substitution cipher given a key
+void subCipher(void) {
+    FILE *input = fopen("\subMessage.txt", "r");
+    FILE *key = fopen("\subKey.txt", "r");
+    
+    int messageLength = 1;
+    
+    while(!feof(input)) {
+        messageLength++;
+        fgetc(input);
+    }
+    
+    fseek(input, 0, SEEK_SET);
+    
+    char message[messageLength], messageKey[26];
+    
+    int tempInd1 = 0, tempInd2 = 0;
+    while(!feof(input)) {
+        message[tempInd1] = fgetc(input);
+        tempInd1++;
+    }
+    
+    while(!feof(key)) {
+        messageKey[tempInd2] = fgetc(key);
+        tempInd2++;
+    }
+    
+    
+    for(int i = 0; i < messageLength; i++) {
+        int swapped = 0;
+        for(int count = 0; count < 26; count++) {
+            if(message[i] == messageKey[count] && !swapped) {
+                if(count%2 == 0) {
+                    message[i] = messageKey[count + 1];
+                    swapped = 1;
+                } else {
+                    message[i] = messageKey[count - 1];
+                    swapped = 1;
+                }
+            }
+        }
+    }
+    printf("%s\n ", message);
+    
+}
+
+float wordsCorrect(char *message, int messageLength) {
+    FILE *wordList = fopen("\wordlist.txt", "r");
+    
+    int spaces = 0, spaceInd = 0;
+    
+    for(int i = 0; i < messageLength; i++) {
+        if(message[i] == ' ') {
+            spaces++;
+        }
+    }
+    
+    int spacePos[spaces];
+    for(int i = 0; i < messageLength; i++) {
+        if(message[i] == ' ') {
+            spacePos[spaceInd] = i;
+            spaceInd++;
+        }
     }
 }
