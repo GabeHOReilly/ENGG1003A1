@@ -5,6 +5,8 @@
 //This allows for the absolute value function to be used
 #include <stdlib.h>
 
+#include <string.h>
+
 //This will shift the alphabet array by the encryption key (numerical)
 void arrayShiftEn(char *arr, char shiftFac);
 
@@ -22,6 +24,12 @@ void unknownCaesar(char *toDec, int toDecLength, char *alpArr);
 
 //This will decrypt a substitution cipher with a known key
 void subCipher(void);
+
+//Gives a ratio between 0 and 1 for the amount of english to total words in the first 5
+float wordsCorrect(char *message, int messageLength);
+
+//Verifies if a word is within the 10000 most commonly used words
+int isWord(char *toTest, int toTestLenght);
 
 int main() {
     int rotOrSub;
@@ -101,7 +109,6 @@ void caesarCipher(void) {
         /*This converts the encryption key to be the equivalent positive value 
         (i.e. -3 is the same as 22)*/
         shiftFac = abs(26 + shiftFac)%26;
-        printf("%c", shiftFac);
         
         //This will shift the ASCII values in the alphabet array by the encryption key
         arrayShiftEn(alpArr, shiftFac);
@@ -110,7 +117,7 @@ void caesarCipher(void) {
         tranMessage(code, codeLength, alpArr);
 
         //Print the encrypted message
-        printf("%s\n", code);
+        printf("%s \n", code);
          
     } else { //Otherwise
         //Allows the choice to decrypt with or without a key
@@ -134,7 +141,7 @@ void caesarCipher(void) {
             //This will decrypt the message
             tranMessage(code, codeLength, alpArr);
         
-            printf("%s\n", code);
+            printf("%s \n", code);
         } else { //If the key is not required
             //Decrypt without the key
             unknownCaesar(code, codeLength, alpArr);
@@ -230,62 +237,23 @@ void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
         toDecCopy[ind] = toDec[ind];
     }
     
-    //These are to take an educated guess at a solution if all else fails
-    int mostE = 0, mostEKey = 0, solved = 0;
+    //Allows the output to be written to a file
+    FILE *output = fopen("\output.txt", "w");
     
     //This runs the translation function on the message with all 26 possible cipehr keys
     for(char count = 0; count < 26; count++) {
-        int eCount = 0;
-
         
         //Try decryption with a certain key
         arrayShiftDe(alpArr, count);
         tranMessage(toDecCopy, toDecLength, alpArr);
         
-        //This looks for common three-letter words to verify if decryption has worked
-        for(int testInd = 0; testInd < toDecLength - 2; testInd++) {
-            //If the word 'THE' is found, print the solution
-            if(toDecCopy[testInd] == 'T' && toDecCopy[testInd + 1] == 'H' && toDecCopy[testInd + 2] == 'E') {
-                printf("%s \n", toDecCopy);
-                solved = 1;
-                return;
-            } else
-            //If the word 'AND' is found, print the solution
-            if(toDecCopy[testInd] == 'A' && toDecCopy[testInd + 1] == 'N' && toDecCopy[testInd + 2] == 'D') {
-                printf("%s \n", toDecCopy);
-                solved = 1;
-                return;
-                
-            } else
-            //If the word 'FOR' is found, print the solution
-            if(toDecCopy[testInd] == 'F' && toDecCopy[testInd + 1] == 'O' && toDecCopy[testInd + 2] == 'R') {
-                printf("%s \n", toDecCopy);
-                solved = 1;
-                return;
-                
-            } else 
-            //If the word 'NOT' is found, print the solution
-            if(toDecCopy[testInd] == 'N' && toDecCopy[testInd + 1] == 'O' && toDecCopy[testInd + 2] == 'T') {
-                printf("%s \n", toDecCopy);
-                solved = 1;
-                return;
-                
-            } else {
-                //Otherwise determine how often the letter 'E' occurs
-                for(int index = 0; index < toDecLength; index++) {
-                    if(toDecCopy[index] == 'E')
-                        eCount++;
-                        
-                }
-                
-                //Record what key yielded the most 'E's
-                if(eCount > mostE) {
-                    mostE = eCount;
-                    mostEKey = count;
-                    
-                }
-            }
-        }
+        //If the word 'THE' is found, print the solution
+        if(wordsCorrect(toDecCopy, toDecLength) >= 0.5) {
+            fprintf(output, "%s", toDecCopy);
+            fclose(output);
+            return;
+        } 
+            
         
         //Resets the alphabet for a new key to be used
         for(int i  = 0; i < 26; i++)
@@ -296,80 +264,205 @@ void unknownCaesar(char *toDec, int toDecLength, char *alpArr) {
             toDecCopy[i] = toDec[i];
     }
     
-    //If no solution has been determined
-    if(!solved) {
-        
-        //Assume that the correct answer is the key which yields the most 'E's
-        arrayShiftDe(alpArr, mostEKey);
-        tranMessage(toDecCopy, toDecLength, alpArr);
-        
-        //Print the answer
-        printf("%s\n", toDecCopy);
-    }
 }
 
 //This will encrypt or decrypt a substitution cipher given a key
 void subCipher(void) {
+    int encOrDec;
+    //Opens the message to be encrpted and decrypted
     FILE *input = fopen("\subMessage.txt", "r");
-    FILE *key = fopen("\subKey.txt", "r");
     
+    //This will be used to determine the length of the message to enable conversion to a string
     int messageLength = 1;
     
+    //Finds the amount of characters in the message
     while(!feof(input)) {
         messageLength++;
         fgetc(input);
     }
     
+    //Resets the file pointer position to the beginning
     fseek(input, 0, SEEK_SET);
     
+    /*Creates a string with the amount of characters as the original message. Also creates a
+    string to contain the key*/
     char message[messageLength], messageKey[26];
     
+    //Initialises 2 variables to 0 for indexing below
     int tempInd1 = 0, tempInd2 = 0;
+    
+    //While the message file still contains more letters
     while(!feof(input)) {
+        //Add another letter from the message file into the message string
         message[tempInd1] = fgetc(input);
+        //Increment this index to enable the next character to be added
         tempInd1++;
     }
     
-    while(!feof(key)) {
-        messageKey[tempInd2] = fgetc(key);
-        tempInd2++;
-    }
-    
-    
-    for(int i = 0; i < messageLength; i++) {
-        int swapped = 0;
-        for(int count = 0; count < 26; count++) {
-            if(message[i] == messageKey[count] && !swapped) {
-                if(count%2 == 0) {
-                    message[i] = messageKey[count + 1];
-                    swapped = 1;
-                } else {
-                    message[i] = messageKey[count - 1];
-                    swapped = 1;
+    //Provides the option of encryption and decryption
+    printf("Type 0 to encrypt and 1 to decrypt");
+    scanf("%d", &encOrDec);
+    if(!encOrDec) {
+        //Opens the key for encryption and decryption
+        FILE *key = fopen("\subKey.txt", "r");
+        
+        //While the key file still contains more letters
+        while(!feof(key)) {
+            //Add another letter from the key file into the key string
+            messageKey[tempInd2] = fgetc(key);
+            //Increment this index to enable the next character to be added
+            tempInd2++;
+        }
+        //printf("%s \n", messageKey);
+        //Cycle through every character in the message string
+        for(int i = 0; i < messageLength; i++) {
+            //Check if the character is a capital letter
+            if(message[i] < 91 && message[i] > 64) {
+                //Replace the character with its substitution
+                message[i] = messageKey[message[i]%65];
+                printf("%s \n", message);
+            }
+            
+        }
+        //Print the message and close the file
+        FILE *output = fopen("\output.txt", "w");
+        fprintf(output, "%s", message);
+        fclose(output);
+    } else {
+        //Stores whether a key is needed
+        int keyReq;
+        printf("Type 0 to decrypt without a key or 1 to decrypt with one");
+        scanf("%d", &keyReq);
+        if(keyReq) {
+            //Opens the key for encryption and decryption
+            FILE *key = fopen("\subKey.txt", "r");
+            
+            //While the key file still contains more letters
+            while(!feof(key)) {
+                //Add another letter from the key file into the key string
+                messageKey[tempInd2] = fgetc(key);
+                //Increment this index to enable the next character to be added
+                tempInd2++;
+            }
+            //Cycle through every character in the message string
+            for(int i = 0; i < messageLength; i++) {
+                for(int keyInd = 0; keyInd < 26; keyInd++){
+                
+                    //Check if the character is a capital letter
+                    if(message[i] == messageKey[keyInd]) {
+                        //Replace the character with its substitution
+                        message[i] = 65 + keyInd;
+                        break;
+                    }
                 }
             }
+            
+            //Print the message and close the file
+            FILE *output = fopen("\output.txt", "w");
+            fprintf(output, "%s", message);
+            fclose(output);
+
         }
     }
-    printf("%s\n ", message);
+
+    
     
 }
 
+
+//Determines a ratio of english to total words within the first 5 words
 float wordsCorrect(char *message, int messageLength) {
-    FILE *wordList = fopen("\wordlist.txt", "r");
+    //Stores the amount of 'spaces' (non letters) in the message
+    int spaces = 0;
     
-    int spaces = 0, spaceInd = 0;
-    
+    //Looks at each character
     for(int i = 0; i < messageLength; i++) {
-        if(message[i] == ' ') {
+        
+        //Records the amount of spaces encountered
+        if(message[i] > 90 || message[i] < 65) {
             spaces++;
+            
         }
     }
     
+    //Stores the positions of the spaces
     int spacePos[spaces];
+    //Used as an index for spacePos
+    int spaceInd = 0;
+    
+    //For each character in the word
     for(int i = 0; i < messageLength; i++) {
-        if(message[i] == ' ') {
+        //Check if it's a letter
+        if(message[i] < 65 || message[i] > 90) {
+            //Stores the position if it is not a lettter
             spacePos[spaceInd] = i;
             spaceInd++;
         }
     }
+    //Stores the amount of words to be tested to verify if decryption has worked
+    int wordsToTest;
+    
+    //Set this to be spaces + 1 with an upper bound of 5 words
+    if(spaces < 5)
+        wordsToTest = spaces + 1;
+    else
+        wordsToTest = 5;
+        
+    //Stores the first 5 words with a maximum length of 30 characters each
+    char currWord[wordsToTest][30];
+    
+    //Stores the amount of english words and declares wordLength for use later
+    int wordCount = 0, wordLength;
+    
+    //Cycle through the words
+    for(int i = 0; i < wordsToTest; i++) {
+        if(i == 0) //For the first word, set its length to the amount of characters before the first space
+            wordLength = spacePos[0];
+        else //For the rest, set their lengths to the distance from one space to the next
+            wordLength = spacePos[i] - spacePos[i-1] - 1;
+        
+        //Takes the message word by word
+        for(int currLet = 0; currLet < wordLength; currLet++) {
+            //If it is not the first word, take the space position as a reference point and store the letters
+            if(i != 0)
+                currWord[i][currLet] = message[spacePos[i-1] + currLet + 1];
+            else //If it is the first word, store the letters
+                currWord[i][currLet] = message[currLet];
+        }
+        
+        //If currWord[i] is a word, add it to the wordcount
+        wordCount += isWord(currWord[i], wordLength);
+    }
+
+    //Return the ratio of english to total words in the first 5  
+    return (float)(wordCount)/wordsToTest;
+}
+
+
+//Determines if toTest is a word
+int isWord(char *toTest, int toTestLength) {
+    
+    //Opens the dictionary file for word comparison
+    FILE *wordList = fopen("\wordlist.txt", "r");
+    
+    //Make a new string to store the words from the dictionary file
+    char currWord[toTestLength];
+    
+    //While there are still more words in the dictionary file
+    while(!feof(wordList)) {
+        
+        //Read a word
+        fscanf(wordList, "%s", &currWord);
+        
+            //If the word from the dictionary is the same as toTest
+            if(!strcmp(toTest, currWord)){
+                
+                //Return that it is a word
+                return 1;
+            }
+
+    }
+    
+    //If no word matches, assume that it is not a word
+    return 0;
 }
