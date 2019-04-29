@@ -32,14 +32,17 @@ float wordsCorrect(char *message, int messageLength);
 //Verifies if a word is within the 10000 most commonly used words
 int isWord(char *toTest, int toTestLenght);
 
+//Performs main functionality of the program
 int main() {
+    
+    //Allows selection between Caesar or substitution cipher
     int rotOrSub;
     printf("Type 0 for Caesar or 1 for substitution: ");
     scanf("%d", &rotOrSub);
     
-    if(!rotOrSub) {
+    if(!rotOrSub) {//If a caesar cipher is selected
         caesarCipher();
-    } else {
+    } else {//If a rotation cipher is selected
         subCipher();
     }
 
@@ -47,6 +50,7 @@ int main() {
     return 0;
 }
 
+//Handles encryption and decryption of a caesar cipher
 void caesarCipher(void) {
     //This is the encryption key (numerical)
     char shiftFac;
@@ -338,6 +342,11 @@ void subCipher(void) {
         while(!feof(key)) {
             //Add another letter from the key file into the key string
             messageKey[tempInd2] = fgetc(key);
+            
+            //Ensures that all letters are upper case
+            if(messageKey[tempInd2] < 123 && messageKey[tempInd2] > 96) {
+                messageKey[tempInd2] -= 32;
+            }
             //Increment this index to enable the next character to be added
             tempInd2++;
         }
